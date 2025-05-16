@@ -1,0 +1,51 @@
+{
+  "name": "sdk-management-backend",
+  "version": "1.0.0",
+  "description": "سیستم مدیریت SDK آرایش مجازی",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "seed": "node -e \"require('./src/seeds').runSeeds()\"",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "test": "jest"
+  },
+  "keywords": [
+    "sdk",
+    "management",
+    "makeup",
+    "virtual"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.27.2",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.1",
+    "express": "^4.18.1",
+    "http-status": "^1.5.2",
+    "joi": "^17.6.0",
+    "jsonwebtoken": "^8.5.1",
+    "kavenegar": "^1.1.4",
+    "lodash": "^4.17.21",
+    "moment": "^2.29.4",
+    "mongoose": "^6.5.2",
+    "morgan": "^1.10.0",
+    "nanoid": "^3.3.4",
+    "node-cron": "^3.0.2",
+    "redis": "^4.3.0",
+    "swagger-jsdoc": "^6.2.5",
+    "swagger-ui-express": "^4.5.0",
+    "winston": "^3.8.1"
+  },
+  "devDependencies": {
+    "eslint": "^8.22.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.26.0",
+    "jest": "^28.1.3",
+    "nodemon": "^2.0.19",
+    "supertest": "^6.2.4"
+  }
+}

@@ -1,0 +1,9 @@
+module.exports.authValidation = require("./auth.validation");
+module.exports.userValidation = require("./user.validation");
+module.exports.planValidation = require("./plan.validation");
+module.exports.productValidation = require("./product.validation");
+module.exports.packageValidation = require("./package.validation");
+module.exports.paymentValidation = require("./payment.validation");
+module.exports.couponValidation = require("./coupon.validation");
+module.exports.notificationValidation = require("./notification.validation");
+module.exports.sdkValidation = require("./sdk.validation");
