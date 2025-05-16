@@ -8,6 +8,7 @@ const paymentRoute = require("./payment.route");
 const couponRoute = require("./coupon.route");
 const notificationRoute = require("./notification.route");
 const sdkRoute = require("./sdk.route");
+const usageRoute = require("./usage.route");
 const docsRoute = require("./docs.route");
 const config = require("../config");
 
@@ -50,6 +51,10 @@ const routes = [
   {
     path: "/sdk",
     route: sdkRoute,
+  },
+  {
+    path: "/usage",
+    route: usageRoute,
   },
   {
     path: "/docs",

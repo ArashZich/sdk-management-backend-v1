@@ -7,3 +7,4 @@ module.exports.paymentController = require("./payment.controller");
 module.exports.couponController = require("./coupon.controller");
 module.exports.notificationController = require("./notification.controller");
 module.exports.sdkController = require("./sdk.controller");
+module.exports.usageController = require("./usage.controller");

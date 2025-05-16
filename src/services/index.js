@@ -11,6 +11,7 @@ const tokenService = require("./token.service");
 const sdkService = require("./sdk.service");
 const usageService = require("./usage.service");
 const smsService = require("./sms.service");
+const usageService = require("./usage.service");
 
 module.exports = {
   authService,
@@ -25,4 +26,5 @@ module.exports = {
   sdkService,
   usageService,
   smsService,
+  usageService,
 };
