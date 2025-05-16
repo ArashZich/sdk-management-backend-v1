@@ -32,6 +32,10 @@ const createPackage = async (packageData) => {
     sdkFeatures
   );
 
+  // تنظیم محدودیت درخواست (بی‌نهایت یا عددی)
+  const monthlyLimit = plan.requestLimit.monthly;
+  const remainingLimit = monthlyLimit === -1 ? -1 : monthlyLimit;
+
   // ایجاد بسته جدید
   const newPackage = await Package.create({
     userId,
@@ -41,8 +45,8 @@ const createPackage = async (packageData) => {
     token,
     sdkFeatures: sdkFeatures || plan.defaultSdkFeatures,
     requestLimit: {
-      monthly: plan.requestLimit.monthly,
-      remaining: plan.requestLimit.monthly,
+      monthly: monthlyLimit,
+      remaining: remainingLimit,
     },
     status: "active",
     paymentId: packageData.paymentId,

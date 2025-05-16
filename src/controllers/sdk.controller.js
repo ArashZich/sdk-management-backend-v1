@@ -54,8 +54,10 @@ const validateToken = catchAsync(async (req, res) => {
   try {
     const { token } = req.body;
 
+    // دریافت IP واقعی کاربر از هدر X-Real-User-IP
+    const ipAddress =
+      req.headers["x-real-user-ip"] || req.ip || req.connection.remoteAddress;
     const origin = req.headers.origin || req.headers.referer;
-    const ipAddress = req.ip || req.connection.remoteAddress;
     const userAgent = req.headers["user-agent"];
 
     const validationResult = await sdkService.validateToken(

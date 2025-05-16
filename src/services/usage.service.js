@@ -1,16 +1,38 @@
 const { Usage, Package } = require("../models");
+const useragent = require("useragent");
 
 /**
  * ثبت استفاده از SDK
  * @param {Object} usageData - داده‌های استفاده
+ * @param {boolean} decrementLimit - آیا از محدودیت کم شود؟
  * @returns {Promise<Usage>}
  */
-const trackUsage = async (usageData) => {
-  // کاهش تعداد درخواست‌های باقیمانده
-  if (usageData.packageId) {
-    await Package.findByIdAndUpdate(usageData.packageId, {
-      $inc: { "requestLimit.remaining": -1 },
-    });
+const trackUsage = async (usageData, decrementLimit = true) => {
+  // کاهش تعداد درخواست‌های باقیمانده (فقط اگر decrementLimit=true و packageId وجود داشته باشد)
+  if (decrementLimit && usageData.packageId) {
+    // بررسی بسته
+    const pkg = await Package.findById(usageData.packageId);
+
+    // فقط اگر محدودیت بی‌نهایت نیست، آن را کاهش دهید
+    if (pkg && pkg.requestLimit.remaining !== -1) {
+      await Package.findByIdAndUpdate(usageData.packageId, {
+        $inc: { "requestLimit.remaining": -1 },
+      });
+    }
+  }
+
+  // تحلیل بیشتر User-Agent
+  if (usageData.userAgent) {
+    const agent = useragent.parse(usageData.userAgent);
+    if (!usageData.metadata) usageData.metadata = {};
+    usageData.metadata.deviceAnalysis = {
+      browser: agent.family,
+      browserVersion: agent.toVersion(),
+      os: agent.os.family,
+      osVersion: agent.os.toVersion(),
+      device: agent.device.family,
+      isMobile: agent.device.family !== "Other",
+    };
   }
 
   // ثبت استفاده

@@ -8,8 +8,8 @@ const planSchema = new mongoose.Schema({
   features: [{ type: String }],
   allowedProducts: [{ type: mongoose.Schema.Types.ObjectId, ref: "Product" }],
   requestLimit: {
-    monthly: { type: Number, required: true },
-    total: { type: Number },
+    monthly: { type: Number, required: true }, // مقدار -1 برای بی‌نهایت
+    total: { type: Number }, // مقدار -1 برای بی‌نهایت
   },
   defaultSdkFeatures: {
     features: [{ type: String }],

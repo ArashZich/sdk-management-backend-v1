@@ -5,6 +5,8 @@ const productService = require("./product.service");
 const usageService = require("./usage.service");
 const ApiError = require("../utils/ApiError");
 const { User } = require("../models");
+const redis = require("../config/redis");
+const useragent = require("useragent");
 
 /**
  * بررسی اعتبار توکن SDK
@@ -34,16 +36,54 @@ const validateToken = async (token, origin, ipAddress, userAgent) => {
       }
     }
 
-    // ثبت استفاده
-    await usageService.trackUsage({
-      userId: user._id,
-      packageId: pkg._id,
-      domain: origin ? new URL(origin).hostname : "",
-      requestType: "validate",
-      ipAddress,
-      userAgent,
-      success: true,
-    });
+    // بررسی محدودیت درخواست
+    // اگر remaining -1 باشد، یعنی بی‌نهایت است و نیازی به بررسی نیست
+    if (pkg.requestLimit.remaining !== -1 && pkg.requestLimit.remaining <= 0) {
+      throw new ApiError(
+        httpStatus.FORBIDDEN,
+        "محدودیت درخواست به پایان رسیده است"
+      );
+    }
+
+    // بررسی IP برای محدودیت زمانی 10 دقیقه
+    const redisKey = `sdk:request:${user._id}:${ipAddress}`;
+    const existingRequest = await redis.get(redisKey);
+
+    // پردازش اطلاعات User-Agent برای تحلیل بیشتر
+    const agent = useragent.parse(userAgent);
+    const deviceInfo = {
+      browser: agent.toAgent(),
+      os: agent.os.toString(),
+      device: agent.device.toString(),
+      isMobile: agent.isMobile,
+    };
+
+    // اگر درخواستی با این IP در 10 دقیقه گذشته نداشته، محدودیت را کاهش دهید
+    // فقط اگر محدودیت بی‌نهایت نیست
+    let decrementLimit = false;
+    if (!existingRequest && pkg.requestLimit.remaining !== -1) {
+      decrementLimit = true;
+      // ذخیره درخواست در Redis با TTL 10 دقیقه (600 ثانیه)
+      await redis.set(redisKey, { timestamp: Date.now(), deviceInfo }, 600);
+    }
+
+    // ثبت استفاده (با یا بدون کاهش محدودیت)
+    await usageService.trackUsage(
+      {
+        userId: user._id,
+        packageId: pkg._id,
+        domain: origin ? new URL(origin).hostname : "",
+        requestType: "validate",
+        ipAddress,
+        userAgent,
+        metadata: {
+          deviceInfo,
+          decrementLimit, // آیا از محدودیت کم شده یا نه
+        },
+        success: true,
+      },
+      decrementLimit
+    ); // پارامتر جدید برای مشخص کردن کاهش محدودیت
 
     return {
       isValid: true,
@@ -58,15 +98,18 @@ const validateToken = async (token, origin, ipAddress, userAgent) => {
     try {
       if (error.message.includes("userId")) {
         const decoded = tokenService.verifySDKToken(token);
-        await usageService.trackUsage({
-          userId: decoded.userId,
-          requestType: "validate",
-          domain: origin ? new URL(origin).hostname : "",
-          ipAddress,
-          userAgent,
-          success: false,
-          errorMessage: error.message,
-        });
+        await usageService.trackUsage(
+          {
+            userId: decoded.userId,
+            requestType: "validate",
+            domain: origin ? new URL(origin).hostname : "",
+            ipAddress,
+            userAgent,
+            success: false,
+            errorMessage: error.message,
+          },
+          false
+        ); // بدون کاهش محدودیت در صورت خطا
       }
     } catch (e) {
       // نادیده گرفتن خطا در ثبت استفاده

@@ -30,6 +30,16 @@ const connectRedis = async () => {
 };
 
 /**
+ * دریافت کلاینت ردیس
+ */
+const getClient = () => {
+  if (!client) {
+    throw new Error("Redis client not initialized");
+  }
+  return client;
+};
+
+/**
  * ذخیره داده در ردیس
  */
 const set = async (key, value, expireTime = 3600) => {
@@ -53,6 +63,7 @@ const del = async (key) => {
 
 module.exports = {
   connectRedis,
+  getClient,
   set,
   get,
   del,

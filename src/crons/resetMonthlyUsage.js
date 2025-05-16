@@ -17,9 +17,13 @@ const resetMonthlyUsage = async () => {
     for (const pkg of activePackages) {
       if (!pkg.planId) continue;
 
+      // اگر محدودیت بی‌نهایت است، آن را حفظ کن
+      const monthlyLimit = pkg.planId.requestLimit.monthly;
+      const newRemainingValue = monthlyLimit === -1 ? -1 : monthlyLimit;
+
       // به‌روزرسانی شمارنده ماهانه
       await Package.findByIdAndUpdate(pkg._id, {
-        "requestLimit.remaining": pkg.planId.requestLimit.monthly,
+        "requestLimit.remaining": newRemainingValue,
       });
 
       updatedCount++;

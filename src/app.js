@@ -8,6 +8,7 @@ const { errorConverter, errorHandler } = require("./middlewares/error");
 const ApiError = require("./utils/ApiError");
 const routes = require("./routes");
 const setupCronJobs = require("./crons");
+const rateLimiter = require("./middlewares/rateLimiter");
 
 const app = express();
 
@@ -26,6 +27,9 @@ app.use(express.urlencoded({ extended: true }));
 
 // کورس
 app.use(cors());
+
+// میدلور محدودیت نرخ درخواست
+app.use(rateLimiter());
 
 // مسیرهای API
 app.use(`/api/${config.apiVersion}`, routes);
