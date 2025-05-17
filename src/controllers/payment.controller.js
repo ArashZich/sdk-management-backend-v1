@@ -12,53 +12,6 @@ const config = require("../config");
 const { nanoid } = require("nanoid");
 const payments = require("../config/payments");
 
-/**
- * ایجاد درخواست پرداخت
- * @swagger
- * /payments:
- *   post:
- *     summary: ایجاد درخواست پرداخت
- *     tags: [Payments]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - planId
- *             properties:
- *               planId:
- *                 type: string
- *               couponCode:
- *                 type: string
- *     responses:
- *       "200":
- *         description: درخواست پرداخت با موفقیت ایجاد شد
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 paymentId:
- *                   type: string
- *                 paymentUrl:
- *                   type: string
- *                 amount:
- *                   type: number
- *                 discount:
- *                   type: number
- *                 finalAmount:
- *                   type: number
- *       "400":
- *         description: اطلاعات نامعتبر
- *       "401":
- *         description: دسترسی غیرمجاز
- *       "404":
- *         description: پلن یافت نشد
- */
 const createPayment = catchAsync(async (req, res) => {
   const { planId, couponCode } = req.body;
   const userId = req.user._id;
@@ -144,28 +97,6 @@ const createPayment = catchAsync(async (req, res) => {
   });
 });
 
-/**
- * بازگشت از درگاه پرداخت
- * @swagger
- * /payments/callback:
- *   get:
- *     summary: بازگشت از درگاه پرداخت
- *     tags: [Payments]
- *     parameters:
- *       - in: query
- *         name: refid
- *         schema:
- *           type: string
- *         description: کد مرجع پرداخت
- *       - in: query
- *         name: clientrefid
- *         schema:
- *           type: string
- *         description: شناسه یکتای درخواست
- *     responses:
- *       "302":
- *         description: انتقال به صفحه نتیجه پرداخت
- */
 const paymentCallback = catchAsync(async (req, res) => {
   const { refid, clientrefid } = req.query;
 
@@ -267,34 +198,6 @@ const paymentCallback = catchAsync(async (req, res) => {
   }
 });
 
-/**
- * دریافت پرداخت‌های کاربر جاری
- * @swagger
- * /payments/me:
- *   get:
- *     summary: دریافت پرداخت‌های کاربر جاری
- *     tags: [Payments]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: query
- *         name: status
- *         schema:
- *           type: string
- *           enum: [pending, success, failed, canceled]
- *         description: وضعیت پرداخت
- *     responses:
- *       "200":
- *         description: لیست پرداخت‌ها
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Payment'
- *       "401":
- *         description: دسترسی غیرمجاز
- */
 const getMyPayments = catchAsync(async (req, res) => {
   const filter = pick(req.query, ["status"]);
   filter.userId = req.user._id;
@@ -305,36 +208,6 @@ const getMyPayments = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send(payments);
 });
 
-/**
- * دریافت پرداخت با شناسه
- * @swagger
- * /payments/{paymentId}:
- *   get:
- *     summary: دریافت پرداخت با شناسه
- *     tags: [Payments]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: paymentId
- *         required: true
- *         schema:
- *           type: string
- *         description: شناسه پرداخت
- *     responses:
- *       "200":
- *         description: اطلاعات پرداخت
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Payment'
- *       "401":
- *         description: دسترسی غیرمجاز
- *       "403":
- *         description: عدم دسترسی به پرداخت
- *       "404":
- *         description: پرداخت یافت نشد
- */
 const getPayment = catchAsync(async (req, res) => {
   const payment = await paymentService.getPaymentById(req.params.paymentId);
   if (!payment) {
@@ -352,38 +225,6 @@ const getPayment = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send(payment);
 });
 
-/**
- * لغو پرداخت
- * @swagger
- * /payments/{paymentId}/cancel:
- *   post:
- *     summary: لغو پرداخت
- *     tags: [Payments]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: paymentId
- *         required: true
- *         schema:
- *           type: string
- *         description: شناسه پرداخت
- *     responses:
- *       "200":
- *         description: پرداخت با موفقیت لغو شد
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Payment'
- *       "400":
- *         description: فقط پرداخت‌های در انتظار قابل لغو هستند
- *       "401":
- *         description: دسترسی غیرمجاز
- *       "403":
- *         description: عدم دسترسی به پرداخت
- *       "404":
- *         description: پرداخت یافت نشد
- */
 const cancelPayment = catchAsync(async (req, res) => {
   const payment = await paymentService.getPaymentById(req.params.paymentId);
   if (!payment) {
@@ -417,72 +258,6 @@ const cancelPayment = catchAsync(async (req, res) => {
   });
 });
 
-/**
- * دریافت همه پرداخت‌ها (ادمین)
- * @swagger
- * /payments:
- *   get:
- *     summary: دریافت همه پرداخت‌ها
- *     description: فقط توسط ادمین قابل دسترسی است.
- *     tags: [Payments]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: query
- *         name: userId
- *         schema:
- *           type: string
- *         description: شناسه کاربر
- *       - in: query
- *         name: planId
- *         schema:
- *           type: string
- *         description: شناسه پلن
- *       - in: query
- *         name: status
- *         schema:
- *           type: string
- *           enum: [pending, success, failed, canceled]
- *         description: وضعیت پرداخت
- *       - in: query
- *         name: limit
- *         schema:
- *           type: integer
- *           minimum: 1
- *         default: 10
- *         description: تعداد آیتم در هر صفحه
- *       - in: query
- *         name: page
- *         schema:
- *           type: integer
- *           minimum: 1
- *           default: 1
- *         description: شماره صفحه
- *     responses:
- *       "200":
- *         description: لیست پرداخت‌ها
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 results:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/Payment'
- *                 page:
- *                   type: integer
- *                 limit:
- *                   type: integer
- *                 totalPages:
- *                   type: integer
- *                 totalResults:
- *                   type: integer
- *       "401":
- *         description: دسترسی غیرمجاز
- *       "403":
- *         description: فقط برای ادمین قابل دسترسی است
- */
 const getPayments = catchAsync(async (req, res) => {
   const filter = pick(req.query, ["userId", "planId", "status"]);
   const options = pick(req.query, ["limit", "page", "sortBy", "populate"]);

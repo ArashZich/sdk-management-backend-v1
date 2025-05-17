@@ -9,7 +9,7 @@ const ApiError = require("./utils/ApiError");
 const routes = require("./routes");
 const setupCronJobs = require("./crons");
 const rateLimiter = require("./middlewares/rateLimiter");
-const setupSwagger = require("./config/swagger"); // اضافه کردن Swagger
+const setupSwagger = require("./config/swagger");
 
 const app = express();
 
@@ -40,7 +40,7 @@ app.use(rateLimiter());
 // مسیرهای API
 app.use(`/api/${config.apiVersion}`, routes);
 
-// تنظیم Swagger (جایگزین شده با تنظیمات جدید)
+// تنظیم Swagger
 setupSwagger(app);
 
 // مسیر سلامتی

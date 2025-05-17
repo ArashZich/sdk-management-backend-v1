@@ -13,16 +13,16 @@ const startServer = async () => {
     // اتصال به ردیس
     await connectRedis();
 
-    // اجرای سیدهای اولیه
-    if (config.env === "development") {
-      await runSeeds();
-    }
+    // اجرای سیدهای اولیه (اگر قبلاً در docker-compose اجرا نشده باشند)
+    // if (config.env === "development") {
+    //   await runSeeds();
+    // }
 
     // شروع سرور
     const server = app.listen(config.port, () => {
       logger.info(`Server running on port ${config.port}`);
       logger.info(
-        `API documentation available at: http://localhost:${config.port}/api/${config.apiVersion}/docs`
+        `API documentation available at: http://localhost:${config.port}/api-docs`
       );
     });
 
@@ -58,4 +58,5 @@ const startServer = async () => {
   }
 };
 
+// اطمینان از اجرای سرور
 startServer();

@@ -5,7 +5,7 @@ const httpStatus = require("http-status");
 const logger = require("../config/logger");
 
 // دریافت کلاینت ردیس
-const client = require("../config/redis").getClient();
+const redisModule = require("../config/redis");
 
 /**
  * میدلور محدودیت نرخ درخواست
@@ -16,6 +16,8 @@ const client = require("../config/redis").getClient();
 const rateLimiter = (maxRequests = 300, windowMs = 60 * 1000) => {
   return async (req, res, next) => {
     try {
+      const client = await redisModule.getClient();
+
       const ip =
         req.headers["x-real-user-ip"] || req.ip || req.socket.remoteAddress;
       const key = `rate-limit:${ip}`;
@@ -51,7 +53,8 @@ const rateLimiter = (maxRequests = 300, windowMs = 60 * 1000) => {
         next(error);
       } else {
         logger.error(`خطا در میدلور rateLimiter: ${error.message}`);
-        next(new ApiError(httpStatus.INTERNAL_SERVER_ERROR, "خطای داخلی سرور"));
+        // در صورت خطا در اتصال به Redis، اجازه دهید درخواست ادامه یابد
+        next();
       }
     }
   };

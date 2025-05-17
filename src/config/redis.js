@@ -25,7 +25,7 @@ const connectRedis = async () => {
     return client;
   } catch (error) {
     logger.error(`Redis connection error: ${error.message}`);
-    process.exit(1);
+    throw error;
   }
 };
 
@@ -33,8 +33,10 @@ const connectRedis = async () => {
  * دریافت کلاینت ردیس
  */
 const getClient = () => {
+  // اگر کلاینت وجود نداشت، سعی کنید آن را ایجاد کنید
   if (!client) {
-    throw new Error("Redis client not initialized");
+    logger.info("Redis client not initialized, initializing now...");
+    return connectRedis().then(() => client);
   }
   return client;
 };
@@ -43,14 +45,16 @@ const getClient = () => {
  * ذخیره داده در ردیس
  */
 const set = async (key, value, expireTime = 3600) => {
-  return await client.set(key, JSON.stringify(value), { EX: expireTime });
+  const redisClient = await getClient();
+  return redisClient.set(key, JSON.stringify(value), { EX: expireTime });
 };
 
 /**
  * دریافت داده از ردیس
  */
 const get = async (key) => {
-  const data = await client.get(key);
+  const redisClient = await getClient();
+  const data = await redisClient.get(key);
   return data ? JSON.parse(data) : null;
 };
 
@@ -58,8 +62,18 @@ const get = async (key) => {
  * حذف داده از ردیس
  */
 const del = async (key) => {
-  return await client.del(key);
+  const redisClient = await getClient();
+  return redisClient.del(key);
 };
+
+// اطمینان از اتصال اولیه
+connectRedis()
+  .then(() => {
+    logger.info("Redis client initialized automatically on module load");
+  })
+  .catch((err) => {
+    logger.error(`Failed to initialize Redis client: ${err.message}`);
+  });
 
 module.exports = {
   connectRedis,
