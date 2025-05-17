@@ -2,11 +2,11 @@ version: '3.8'
 
 services:
   mongo:
-    image: mongo:6.0
+    image: mongo:latest
     container_name: ${COMPOSE_PROJECT_NAME:-makeup-sdk}-mongo
     restart: unless-stopped
     ports:
-      - "${MONGO_PORT:-27017}:27017"
+      - "27020:27017"  # پورت خارجی 27020 به پورت داخلی 27017
     volumes:
       - mongo_data:/data/db
       - ./docker/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
@@ -23,7 +23,7 @@ services:
     container_name: ${COMPOSE_PROJECT_NAME:-makeup-sdk}-mongo-express
     restart: unless-stopped
     ports:
-      - "${MONGO_EXPRESS_PORT:-8081}:8081"
+      - "8085:8081"  # پورت خارجی 8085 به پورت داخلی 8081
     environment:
       ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_USERNAME}
       ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_PASSWORD}
@@ -40,8 +40,9 @@ services:
     image: redis:7-alpine
     container_name: ${COMPOSE_PROJECT_NAME:-makeup-sdk}-redis
     restart: unless-stopped
+    command: redis-server --protected-mode no  # حذف رمز عبور
     ports:
-      - "${REDIS_PORT:-6379}:6379"
+      - "6380:6379"  # پورت خارجی 6380 به پورت داخلی 6379
     volumes:
       - redis_data:/data
     networks:
@@ -54,7 +55,7 @@ services:
     container_name: ${COMPOSE_PROJECT_NAME:-makeup-sdk}-api
     restart: unless-stopped
     ports:
-      - "${PORT:-4000}:${PORT:-4000}"
+      - "5000:${PORT:-4000}"  # پورت خارجی 5000 به پورت داخلی که در ENV تعریف شده
     env_file:
       - .env
     volumes:
