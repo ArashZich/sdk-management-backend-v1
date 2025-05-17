@@ -11,6 +11,7 @@ const envVarsSchema = Joi.object()
       .required(),
     PORT: Joi.number().default(4000),
     API_VERSION: Joi.string().default("v1"),
+    FRONTEND_URL: Joi.string().required().description("Frontend URL"),
     MONGODB_URI: Joi.string().required().description("MongoDB URI"),
     MONGODB_URI_TEST: Joi.string().required().description("MongoDB Test URI"),
     REDIS_URL: Joi.string().required().description("Redis URL"),
@@ -29,6 +30,10 @@ const envVarsSchema = Joi.object()
     PAYMENT_CALLBACK_URL: Joi.string()
       .required()
       .description("Payment Callback URL"),
+    SWAGGER_USER: Joi.string().description("Swagger Authentication Username"),
+    SWAGGER_PASSWORD: Joi.string().description(
+      "Swagger Authentication Password"
+    ),
   })
   .unknown();
 
@@ -44,6 +49,9 @@ module.exports = {
   env: envVars.NODE_ENV,
   port: envVars.PORT,
   apiVersion: envVars.API_VERSION,
+  frontend: {
+    url: envVars.FRONTEND_URL,
+  },
   mongoose: {
     url:
       envVars.NODE_ENV === "test"
@@ -72,5 +80,11 @@ module.exports = {
     apiKey: envVars.PAYPING_API_KEY,
     baseUrl: "https://api.payping.ir/v3",
     callbackUrl: envVars.PAYMENT_CALLBACK_URL,
+  },
+  swagger: {
+    username: envVars.SWAGGER_USER || "admin",
+    password:
+      envVars.SWAGGER_PASSWORD ||
+      "1e446e0aba3b673493a3fc555cd6ab6695965b0edb572ea7934f61ac541bbf64",
   },
 };

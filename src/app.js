@@ -9,6 +9,7 @@ const ApiError = require("./utils/ApiError");
 const routes = require("./routes");
 const setupCronJobs = require("./crons");
 const rateLimiter = require("./middlewares/rateLimiter");
+const setupSwagger = require("./config/swagger"); // اضافه کردن Swagger
 
 const app = express();
 
@@ -25,8 +26,13 @@ if (config.env !== "test") {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// کورس
-app.use(cors());
+// کنترل CORS
+app.use(
+  cors({
+    origin: config.frontend.url || "*",
+    credentials: true,
+  })
+);
 
 // میدلور محدودیت نرخ درخواست
 app.use(rateLimiter());
@@ -34,9 +40,12 @@ app.use(rateLimiter());
 // مسیرهای API
 app.use(`/api/${config.apiVersion}`, routes);
 
+// تنظیم Swagger (جایگزین شده با تنظیمات جدید)
+setupSwagger(app);
+
 // مسیر سلامتی
 app.get("/health", (req, res) => {
-  res.status(200).send({ status: "ok" });
+  res.status(200).send({ status: "ok", version: "1.0.0", env: config.env });
 });
 
 // مدیریت مسیرهای ناموجود
